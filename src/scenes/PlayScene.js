@@ -10,11 +10,9 @@ class PlayScene extends Phaser.Scene {
     this.pipeVerticalDistanceRange = [150, 250];
     this.pipeHorizontalDistanceRange = [500, 550];
     this.flapVelocity = 300;
-
     this.score = 0;
     this.scoreText = '';
   }
-
   preload() {
     this.load.image('sky', 'assets/sky.png');
     this.load.image('bird', 'assets/bird.png');
@@ -28,7 +26,6 @@ class PlayScene extends Phaser.Scene {
     this.createScore();
     this.handleInputs();
   }
-
   update() {
     this.checkGameStatus();
     this.recyclePipes();
@@ -60,7 +57,9 @@ class PlayScene extends Phaser.Scene {
 
   createScore() {
     this.score = 0;
+    const bestScore = localStorage.getItem('bestScore');
     this.scoreText = this.add.text(16, 16, `Score: ${0}`, { fontSize: '32px', fill: '#000'});
+    this.add.text(16, 52, `Best score: ${bestScore || 0}`, { fontSize: '18px', fill: '#000'});
   }
 
   handleInputs() {
@@ -90,6 +89,7 @@ class PlayScene extends Phaser.Scene {
         if (tempPipes.length === 2) {
           this.placePipe(...tempPipes);
           this.increaseScore();
+          this.saveBestScore();
         }
       }
     })
@@ -101,9 +101,22 @@ class PlayScene extends Phaser.Scene {
     })
     return rightMostX;
   }
+
+  saveBestScore() {
+    const bestScoreText = localStorage.getItem('bestScore');
+    const bestScore = bestScoreText && parseInt(bestScoreText, 10);
+
+    if (!bestScore || this.score > bestScore) {
+      localStorage.setItem('bestScore', this.score);
+    }
+  }
+
   gameOver() {
     this.physics.pause();
     this.bird.setTint(0xEE4824);
+
+    this.saveBestScore();
+
     this.time.addEvent({
       delay: 1000,
       callback: () => {
@@ -115,11 +128,9 @@ class PlayScene extends Phaser.Scene {
   flap() {
     this.bird.body.velocity.y = -this.flapVelocity;
   }
-
   increaseScore() {
     this.score++;
     this.scoreText.setText(`Score: ${this.score}`)
   }
 }
-
 export default PlayScene;
