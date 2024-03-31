@@ -17,6 +17,7 @@ class PlayScene extends Phaser.Scene {
     this.load.image('sky', 'assets/sky.png');
     this.load.image('bird', 'assets/bird.png');
     this.load.image('pipe', 'assets/pipe.png');
+    this.load.image('pause', 'assets/pause.png');
   }
   create() {
     this.createBG();
@@ -24,6 +25,7 @@ class PlayScene extends Phaser.Scene {
     this.createPipes();
     this.createColliders();
     this.createScore();
+    this.createPause();
     this.handleInputs();
   }
   update() {
@@ -54,12 +56,24 @@ class PlayScene extends Phaser.Scene {
   createColliders() {
     this.physics.add.collider(this.bird, this.pipes, this.gameOver, null, this);
   }
-
   createScore() {
     this.score = 0;
     const bestScore = localStorage.getItem('bestScore');
     this.scoreText = this.add.text(16, 16, `Score: ${0}`, { fontSize: '32px', fill: '#000'});
     this.add.text(16, 52, `Best score: ${bestScore || 0}`, { fontSize: '18px', fill: '#000'});
+  }
+
+  createPause() {
+    const pauseButton = this.add.image(this.config.width - 10, this.config.height -10, 'pause')
+      .setInteractive()
+      .setScale(3)
+      .setOrigin(1);
+    
+
+    pauseButton.on('pointerdown', () => {
+      this.physics.pause();
+      this.scene.pause();
+    })
   }
 
   handleInputs() {
@@ -101,22 +115,17 @@ class PlayScene extends Phaser.Scene {
     })
     return rightMostX;
   }
-
   saveBestScore() {
     const bestScoreText = localStorage.getItem('bestScore');
     const bestScore = bestScoreText && parseInt(bestScoreText, 10);
-
     if (!bestScore || this.score > bestScore) {
       localStorage.setItem('bestScore', this.score);
     }
   }
-
   gameOver() {
     this.physics.pause();
     this.bird.setTint(0xEE4824);
-
     this.saveBestScore();
-
     this.time.addEvent({
       delay: 1000,
       callback: () => {

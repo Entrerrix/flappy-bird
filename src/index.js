@@ -1,6 +1,7 @@
 
 import Phaser from 'phaser';
 import PlayScene from './scenes/PlayScene';
+import MenuScene from './scenes/MenuScene';
 const WIDTH = 800;
 const HEIGHT = 600;
 const BIRD_POSITION = {x: WIDTH * 0.1, y: HEIGHT / 2 };
@@ -21,7 +22,7 @@ const config = {
       debug: true,
     }
   },
-  scene: [new PlayScene(SHARED_CONFIG)]
+  scene: [new MenuScene(SHARED_CONFIG), new PlayScene(SHARED_CONFIG)]
 }
 
 
