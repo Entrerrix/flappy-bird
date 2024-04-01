@@ -1,17 +1,13 @@
-
-
 import BaseScene from './BaseScene';
-
 const PIPES_TO_RENDER = 4;
-
 class PlayScene extends BaseScene {
-
   constructor(config) {
-  
     super('PlayScene', config);
 
     this.bird = null;
     this.pipes = null;
+    this.isPaused = false;
+
     this.pipeHorizontalDistance = 0;
     this.pipeVerticalDistanceRange = [150, 250];
     this.pipeHorizontalDistanceRange = [500, 550];
@@ -19,7 +15,6 @@ class PlayScene extends BaseScene {
     this.score = 0;
     this.scoreText = '';
   }
-
   create() {
     super.create();
     this.createBird();
@@ -28,10 +23,34 @@ class PlayScene extends BaseScene {
     this.createScore();
     this.createPause();
     this.handleInputs();
+    this.listenToEvents();
   }
   update() {
     this.checkGameStatus();
     this.recyclePipes();
+  }
+  listenToEvents() {
+    if (this.pauseEvent) { return; }
+    this.pauseEvent = this.events.on('resume', () => {
+      this.initialTime = 3;
+      this.countDownText = this.add.text(...this.screenCenter, 'Fly in: ' + this.initialTime, this.fontOptions).setOrigin(0.5);
+      this.timedEvent = this.time.addEvent({
+        delay: 1000,
+        callback: this.countDown,
+        callbackScope: this,
+        loop: true
+      })
+    })
+  }
+  countDown() {
+    this.initialTime--;
+    this.countDownText.setText('Fly in: ' + this.initialTime);
+    if (this.initialTime <= 0) {
+      this.isPaused = false;
+      this.countDownText.setText('');
+      this.physics.resume();
+      this.timedEvent.remove();
+    }
   }
   createBG() {
     this.add.image(0, 0, 'sky').setOrigin(0);
@@ -65,18 +84,19 @@ class PlayScene extends BaseScene {
   }
 
   createPause() {
+    this.isPaused = false;
     const pauseButton = this.add.image(this.config.width - 10, this.config.height -10, 'pause')
       .setInteractive()
       .setScale(3)
       .setOrigin(1);
-    
 
     pauseButton.on('pointerdown', () => {
+      this.isPaused = true;
       this.physics.pause();
       this.scene.pause();
+      this.scene.launch('PauseScene');
     })
   }
-
   handleInputs() {
     this.input.on('pointerdown', this.flap, this);
     this.input.keyboard.on('keydown_SPACE', this.flap, this);
@@ -135,9 +155,12 @@ class PlayScene extends BaseScene {
       loop: false
     })
   }
+
   flap() {
+    if (this.isPaused) { return; }
     this.bird.body.velocity.y = -this.flapVelocity;
   }
+
   increaseScore() {
     this.score++;
     this.scoreText.setText(`Score: ${this.score}`)
