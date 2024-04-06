@@ -36,6 +36,7 @@ class PlayScene extends BaseScene {
     this.createPause();
     this.handleInputs();
     this.listenToEvents();
+
     this.anims.create({
       key: 'fly',
       frames: this.anims.generateFrameNumbers('bird', { start: 9, end: 15}),
@@ -46,8 +47,11 @@ class PlayScene extends BaseScene {
       // repeat infinitely
       repeat: -1
     })
+
+
     this.bird.play('fly');
   }
+
   update() {
     this.checkGameStatus();
     this.recyclePipes();
@@ -83,21 +87,22 @@ class PlayScene extends BaseScene {
       .setFlipX(true)
       .setScale(3)
       .setOrigin(0);
-
-    this.bird.setBodySize(this.bird.width, this.bird.height - 8);
     this.bird.body.gravity.y = 600;
     this.bird.setCollideWorldBounds(true);
   }
   createPipes() {
     this.pipes = this.physics.add.group();
     for (let i = 0; i < PIPES_TO_RENDER; i++) {
-      const upperPipe = this.pipes.create(0, 0, 'pipe')
-        .setImmovable(true)
-        .setOrigin(0, 1);
-      const lowerPipe = this.pipes.create(0, 0, 'pipe')
-        .setImmovable(true)
-        .setOrigin(0, 0);
-      this.placePipe(upperPipe, lowerPipe)
+        const upperPipe = this.pipes.create(0, 0, 'pipe')
+            .setImmovable(true)
+            .setOrigin(0, 1) // Set origin to center-bottom
+            
+        const lowerPipe = this.pipes.create(0, 0, 'pipe')
+            .setImmovable(true)
+            .setOrigin(0, 0);
+
+        this.placePipe(upperPipe, lowerPipe);
+
     }
     this.pipes.setVelocityX(-200);
   }
